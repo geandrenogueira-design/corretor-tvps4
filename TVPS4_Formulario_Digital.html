@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>TVPS-4</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --purple: #5b2d8e;
+  --purple-dark: #3d1a6e;
+  --purple-light: #7c4daf;
+  --purple-pale: #f0e8fa;
+  --purple-mid: #d8c0f0;
+  --text: #1a1a2e;
+  --muted: #7a7a9a;
+  --border: #ddd0f0;
+  --bg: #f7f4fc;
+  --correct: #2e7d32;
+  --wrong: #c62828;
+  --bg-correct: #e8f5e9;
+  --bg-wrong: #ffebee;
+  --ceiling: #e65100;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; overflow: hidden; }
+body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); display: flex; flex-direction: column; }
+
+.header {
+  background: linear-gradient(135deg, var(--purple-dark), var(--purple-light));
+  height: 60px; display: flex; align-items: center; padding: 0 16px; gap: 12px;
+  flex-shrink: 0; box-shadow: 0 2px 12px rgba(60,20,100,0.3); z-index: 10;
+}
+.diamond { width: 32px; height: 32px; background: rgba(255,255,255,0.2); transform: rotate(45deg); flex-shrink: 0; }
+.header-text h2 { font-family: 'DM Serif Display', serif; font-size: 17px; color: white; line-height: 1.1; }
+.header-text p { font-size: 10px; color: rgba(255,255,255,0.6); letter-spacing: 1.5px; text-transform: uppercase; }
+.header-actions { margin-left: auto; display: flex; gap: 8px; }
+.hbtn {
+  height: 36px; padding: 0 14px; border-radius: 18px; border: none;
+  font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; touch-action: manipulation;
+}
+.hbtn-ghost { background: rgba(255,255,255,0.15); color: white; }
+.hbtn-solid { background: white; color: var(--purple); }
+
+.tabs {
+  height: 52px; background: white; border-bottom: 2px solid var(--border);
+  display: flex; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; flex-shrink: 0; scrollbar-width: none;
+}
+.tabs::-webkit-scrollbar { display: none; }
+.tab-btn {
+  flex-shrink: 0; height: 100%; padding: 0 16px; border: none; background: transparent;
+  font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600; color: var(--muted);
+  cursor: pointer; border-bottom: 3px solid transparent; touch-action: manipulation; white-space: nowrap;
+}
+.tab-btn.active { color: var(--purple); border-bottom-color: var(--purple); }
+
+.scroll-area { flex: 1; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; }
+.panel { display: none; padding: 14px; }
+.panel.active { display: block; }
+
+.card {
+  background: white; border-radius: 14px; border: 1px solid var(--border);
+  margin-bottom: 14px; overflow: hidden; box-shadow: 0 2px 8px rgba(91,45,142,0.06);
+}
+.card-header {
+  background: var(--purple); color: white; padding: 9px 16px;
+  font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;
+}
+.card-body { padding: 16px; }
+
+.field-group { display: flex; flex-direction: column; gap: 12px; }
+.field label { display: block; font-size: 11px; font-weight: 700; color: var(--purple); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 5px; }
+.field input, .field select {
+  width: 100%; height: 48px; border: 2px solid var(--border); border-radius: 10px;
+  padding: 0 14px; font-family: 'DM Sans', sans-serif; font-size: 16px; color: var(--text);
+  background: white; outline: none; -webkit-appearance: none; transition: border-color 0.2s;
+}
+.field input:focus, .field select:focus { border-color: var(--purple); }
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.field-row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+.age-display {
+  height: 48px; border: 2px solid var(--border); border-radius: 10px; padding: 0 14px;
+  display: flex; align-items: center; font-size: 14px; font-weight: 600; color: var(--purple); background: var(--purple-pale);
+}
+
+.instructions {
+  background: var(--purple-pale); border-left: 4px solid var(--purple); border-radius: 0 10px 10px 0;
+  padding: 12px 14px; font-size: 13px; line-height: 1.7; color: var(--purple-dark); margin-bottom: 14px;
+}
+.rule-tag {
+  display: inline-block; background: var(--purple); color: white; font-size: 10px; font-weight: 700;
+  letter-spacing: 1px; padding: 2px 7px; border-radius: 4px; margin-right: 5px; text-transform: uppercase;
+}
+.note { background: #fff8e1; border: 1px solid #ffe082; border-radius: 10px; padding: 10px 14px; font-size: 12px; color: #5d4037; line-height: 1.6; }
+
+.progress-bar { height: 5px; background: var(--border); border-radius: 3px; margin-bottom: 14px; overflow: hidden; }
+.progress-fill { height: 100%; background: linear-gradient(90deg, var(--purple), #b5179e); border-radius: 3px; transition: width 0.4s; }
+
+.sub-header {
+  background: linear-gradient(90deg, var(--purple), var(--purple-light)); color: white;
+  padding: 12px 16px; display: flex; align-items: center; justify-content: space-between;
+}
+.sub-name { font-size: 15px; font-weight: 700; }
+.sub-code { background: rgba(255,255,255,0.2); padding: 4px 11px; border-radius: 12px; font-size: 12px; letter-spacing: 1px; }
+.sub-prompt { background: var(--purple-pale); padding: 10px 16px; font-size: 12px; color: var(--purple-dark); font-style: italic; border-bottom: 1px solid var(--border); line-height: 1.5; }
+.sub-prompt strong { font-style: normal; }
+
+.item-row {
+  display: flex; align-items: center; padding: 6px 14px;
+  border-bottom: 1px solid #f0eaf8; min-height: 56px; gap: 10px;
+}
+.item-row.example-row { background: #f5f0fb; }
+.item-label { font-size: 12px; font-weight: 700; color: var(--purple); width: 68px; flex-shrink: 0; }
+.item-label.ex-label { color: var(--muted); }
+.resp-group { display: flex; gap: 7px; flex: 1; flex-wrap: nowrap; align-items: center; }
+.resp-btn {
+  width: 46px; height: 46px; border-radius: 23px; border: 2px solid var(--border); background: white;
+  font-size: 15px; font-weight: 700; color: var(--muted); cursor: pointer; touch-action: manipulation;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'DM Sans', sans-serif; -webkit-user-select: none; user-select: none; flex-shrink: 0;
+}
+.resp-btn.sel-correct { background: var(--bg-correct); border-color: var(--correct); color: var(--correct); }
+.resp-btn.sel-wrong { background: var(--bg-wrong); border-color: var(--wrong); color: var(--wrong); }
+
+.score-col { width: 34px; flex-shrink: 0; text-align: center; }
+.score-badge { display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; border-radius: 7px; font-size: 13px; font-weight: 800; }
+.sc-1 { background: var(--bg-correct); color: var(--correct); }
+.sc-0 { background: var(--bg-wrong); color: var(--wrong); }
+.sc-blank { color: var(--border); font-size: 20px; line-height: 1; }
+
+.sub-footer {
+  background: var(--purple-pale); padding: 12px 16px;
+  display: flex; align-items: center; justify-content: space-between; border-top: 2px solid var(--border);
+}
+.ceiling-warn { display: none; align-items: center; gap: 7px; font-size: 12px; font-weight: 700; color: var(--ceiling); }
+.ceiling-warn.show { display: flex; }
+.ceiling-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ceiling); animation: pulse 1.5s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+.total-box { display: flex; align-items: center; gap: 10px; }
+.total-label { font-size: 11px; font-weight: 700; color: var(--purple-dark); letter-spacing: 0.5px; }
+.total-value {
+  background: var(--purple); color: white; font-size: 20px; font-weight: 800;
+  width: 48px; height: 48px; border-radius: 10px; display: flex; align-items: center; justify-content: center;
+}
+
+.summary-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.summary-table { width: 100%; min-width: 520px; border-collapse: collapse; font-size: 13px; }
+.summary-table th { background: var(--purple); color: white; padding: 10px 12px; text-align: left; font-size: 11px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; white-space: nowrap; }
+.summary-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+.summary-table .sub-row td:first-child { font-weight: 600; color: var(--purple-dark); }
+.sum-row td { background: var(--purple-mid) !important; font-weight: 700; }
+.overall-row td { background: var(--purple) !important; color: white !important; font-weight: 700; font-size: 15px; }
+.tbl-input { height: 40px; border: 2px solid var(--border); border-radius: 8px; padding: 0 8px; font-family: 'DM Sans', sans-serif; font-size: 14px; text-align: center; outline: none; width: 68px; -webkit-appearance: none; }
+.tbl-input:focus { border-color: var(--purple); }
+.tbl-raw { background: var(--purple-pale); border-color: var(--purple-mid); color: var(--purple); font-weight: 700; }
+
+.pct-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 8px; }
+.pct-table th { background: var(--purple-dark); color: white; padding: 8px 10px; text-align: center; font-size: 11px; font-weight: 700; }
+.pct-table td { padding: 8px 10px; text-align: center; border-bottom: 1px solid var(--border); }
+.pct-table .avg td { background: var(--purple-pale); }
+
+.comments {
+  width: 100%; border: 2px solid var(--border); border-radius: 10px; padding: 12px;
+  font-family: 'DM Sans', sans-serif; font-size: 15px; line-height: 1.7; resize: vertical; min-height: 130px;
+  outline: none; color: var(--text);
+}
+.comments:focus { border-color: var(--purple); }
+
+@media print {
+  html, body { overflow: visible; height: auto; }
+  .scroll-area { overflow: visible; }
+  .tabs, .header-actions { display: none !important; }
+  .panel { display: block !important; }
+  .card { break-inside: avoid; }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="diamond"></div>
+  <div class="header-text">
+    <h2>Visual Perceptual Skills</h2>
+    <p>TVPS-4 — Registro Digital</p>
+  </div>
+  <div class="header-actions">
+    <button class="hbtn hbtn-ghost" onclick="if(confirm('Limpar todos os dados?')) resetAll()">↺ Limpar</button>
+    <button class="hbtn hbtn-solid" onclick="window.print()">⎙ Imprimir</button>
+  </div>
+</div>
+
+<div class="tabs" id="tabs">
+  <button class="tab-btn active" onclick="showTab('patient',this)">Paciente</button>
+  <button class="tab-btn" onclick="showTab('sub1',this)">1 · DIS</button>
+  <button class="tab-btn" onclick="showTab('sub2',this)">2 · MEM</button>
+  <button class="tab-btn" onclick="showTab('sub3',this)">3 · SPA</button>
+  <button class="tab-btn" onclick="showTab('sub4',this)">4 · CON</button>
+  <button class="tab-btn" onclick="showTab('sub5',this)">5 · SEQ</button>
+  <button class="tab-btn" onclick="showTab('sub6',this)">6 · FGR</button>
+  <button class="tab-btn" onclick="showTab('sub7',this)">7 · CLO</button>
+  <button class="tab-btn" onclick="showTab('summary',this)">Resumo</button>
+</div>
+
+<div class="scroll-area">
+
+  <div class="panel active" id="panel-patient">
+    <div class="progress-bar"><div class="progress-fill" id="prog" style="width:0%"></div></div>
+    <div class="card">
+      <div class="card-header">Identificação</div>
+      <div class="card-body">
+        <div class="field-group">
+          <div class="field"><label>Nome</label><input id="f-name" type="text" autocomplete="off" placeholder="Nome completo"></div>
+          <div class="field-row">
+            <div class="field"><label>Gênero</label>
+              <select id="f-gender"><option value="">—</option><option>M</option><option>F</option></select>
+            </div>
+            <div class="field"><label>Série</label><input id="f-grade" type="text" placeholder="Ex: 3º ano"></div>
+          </div>
+          <div class="field"><label>Escola / Instituição</label><input id="f-school" type="text"></div>
+          <div class="field"><label>Examinador</label><input id="f-exam" type="text" placeholder="CROO 1726"></div>
+          <div class="field"><label>Motivo do Exame</label><input id="f-reason" type="text"></div>
+          <div class="field">
+            <label>Data do Exame</label>
+            <div class="field-row3">
+              <div class="field"><label>Ano</label><input id="ty" type="number" inputmode="numeric" placeholder="2024"></div>
+              <div class="field"><label>Mês</label><input id="tm" type="number" inputmode="numeric" min="1" max="12" placeholder="1"></div>
+              <div class="field"><label>Dia</label><input id="td" type="number" inputmode="numeric" min="1" max="31" placeholder="1"></div>
+            </div>
+          </div>
+          <div class="field">
+            <label>Data de Nascimento</label>
+            <div class="field-row3">
+              <div class="field"><label>Ano</label><input id="by" type="number" inputmode="numeric" placeholder="2015"></div>
+              <div class="field"><label>Mês</label><input id="bm" type="number" inputmode="numeric" min="1" max="12" placeholder="1"></div>
+              <div class="field"><label>Dia</label><input id="bd" type="number" inputmode="numeric" min="1" max="31" placeholder="1"></div>
+            </div>
+          </div>
+          <div class="field">
+            <label>Idade Cronológica</label>
+            <div class="age-display" id="age-display">Preencha as datas acima</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="instructions">
+      <strong>Pontos de Início:</strong> 5–11 anos → item 1 &nbsp;|&nbsp; 12–21 anos → item 4
+      <div style="margin-top:8px"><span class="rule-tag">Basal</span> Se errar os 3 primeiros do ponto de início, aplique itens anteriores até 3 seguidos corretos.</div>
+      <div style="margin-top:6px"><span class="rule-tag">Teto</span> Encerre quando 5 de 7 itens consecutivos estiverem incorretos.</div>
+    </div>
+    <div class="note">
+      <strong>⚠ Nota:</strong> Escores brutos calculados automaticamente. A conversão para escore ponderado por faixa etária requer as tabelas normativas do Manual do Examinador.
+    </div>
+  </div>
+
+  <div class="panel" id="panel-sub1"></div>
+  <div class="panel" id="panel-sub2"></div>
+  <div class="panel" id="panel-sub3"></div>
+  <div class="panel" id="panel-sub4"></div>
+  <div class="panel" id="panel-sub5"></div>
+  <div class="panel" id="panel-sub6"></div>
+  <div class="panel" id="panel-sub7"></div>
+
+  <div class="panel" id="panel-summary">
+    <div class="card">
+      <div class="card-header">Resumo dos Subtestes</div>
+      <div class="card-body" style="padding:0">
+        <div class="summary-scroll">
+          <table class="summary-table">
+            <thead>
+              <tr>
+                <th>Subteste</th><th>Bruto</th><th>Ponderado</th><th>IC 90%</th><th>Percentil</th><th>Equiv. Etário</th>
+              </tr>
+            </thead>
+            <tbody id="sum-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">Conversão: Ponderado → Escore Padrão</div>
+      <div class="card-body" style="padding:0">
+        <div class="summary-scroll">
+          <table class="pct-table">
+            <thead><tr><th>%ile</th><th>Esc. Ponderado</th><th>Esc. Padrão</th><th>Interpretação</th></tr></thead>
+            <tbody>
+              <tr><td>&gt;99</td><td>19</td><td>145</td><td>Muito Superior</td></tr>
+              <tr><td>&gt;99</td><td>18</td><td>140</td><td>Muito Superior</td></tr>
+              <tr><td>99</td><td>17</td><td>135</td><td>Muito Superior</td></tr>
+              <tr><td>98</td><td>16</td><td>130</td><td>Superior</td></tr>
+              <tr><td>95</td><td>15</td><td>125</td><td>Superior</td></tr>
+              <tr><td>91</td><td>14</td><td>120</td><td>Acima da Média</td></tr>
+              <tr><td>84</td><td>13</td><td>115</td><td>Acima da Média</td></tr>
+              <tr class="avg"><td>75</td><td>12</td><td>110</td><td>Média</td></tr>
+              <tr class="avg"><td>63</td><td>11</td><td>105</td><td>Média</td></tr>
+              <tr class="avg"><td>50</td><td>10</td><td>100</td><td>Média</td></tr>
+              <tr class="avg"><td>37</td><td>9</td><td>95</td><td>Média</td></tr>
+              <tr class="avg"><td>25</td><td>8</td><td>90</td><td>Média</td></tr>
+              <tr><td>16</td><td>7</td><td>85</td><td>Abaixo da Média</td></tr>
+              <tr><td>9</td><td>6</td><td>80</td><td>Abaixo da Média</td></tr>
+              <tr><td>5</td><td>5</td><td>75</td><td>Abaixo da Média</td></tr>
+              <tr><td>2</td><td>4</td><td>70</td><td>Muito Abaixo</td></tr>
+              <tr><td>1</td><td>3</td><td>65</td><td>Muito Abaixo</td></tr>
+              <tr><td>&lt;1</td><td>2</td><td>60</td><td>Muito Abaixo</td></tr>
+              <tr><td>&lt;1</td><td>1</td><td>55</td><td>Muito Abaixo</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">Comentários</div>
+      <div class="card-body">
+        <textarea class="comments" id="comments" placeholder="Observações clínicas, comportamento durante a avaliação..."></textarea>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+var SUBTESTS = [
+  { id:'DIS', num:1, name:'Visual Discrimination', nOpt:5,
+    prompt:'<strong>"Qual dos desenhos abaixo parece exatamente igual ao do topo?"</strong>',
+    items:[
+      {id:'DIS Ex A',correct:2,ex:true},{id:'DIS Ex B',correct:5,ex:true},
+      {id:'DIS 1',correct:3},{id:'DIS 2',correct:5},{id:'DIS 3',correct:3},
+      {id:'DIS 4',correct:2},{id:'DIS 5',correct:3},{id:'DIS 6',correct:2},
+      {id:'DIS 7',correct:1},{id:'DIS 8',correct:1},{id:'DIS 9',correct:5},
+      {id:'DIS 10',correct:2},{id:'DIS 11',correct:4},{id:'DIS 12',correct:4},
+      {id:'DIS 13',correct:5},{id:'DIS 14',correct:4},{id:'DIS 15',correct:2},
+      {id:'DIS 16',correct:5},{id:'DIS 17',correct:3},{id:'DIS 18',correct:1}
+    ]},
+  { id:'MEM', num:2, name:'Visual Memory', nOpt:4,
+    prompt:'Mostre por 5 segundos. <strong>"Qual destes é o que você acabou de ver?"</strong>',
+    items:[
+      {id:'MEM Ex A',correct:2,ex:true},{id:'MEM Ex B',correct:4,ex:true},
+      {id:'MEM 1',correct:3},{id:'MEM 2',correct:2},{id:'MEM 3',correct:3},
+      {id:'MEM 4',correct:1},{id:'MEM 5',correct:2},{id:'MEM 6',correct:2},
+      {id:'MEM 7',correct:3},{id:'MEM 8',correct:2},{id:'MEM 9',correct:4},
+      {id:'MEM 10',correct:1},{id:'MEM 11',correct:2},{id:'MEM 12',correct:1},
+      {id:'MEM 13',correct:3},{id:'MEM 14',correct:4},{id:'MEM 15',correct:2},
+      {id:'MEM 16',correct:4},{id:'MEM 17',correct:3},{id:'MEM 18',correct:1}
+    ]},
+  { id:'SPA', num:3, name:'Spatial Relationships', nOpt:5,
+    prompt:'<strong>"Qual destes é diferente de todos os outros?"</strong>',
+    items:[
+      {id:'SPA Ex A',correct:3,ex:true},{id:'SPA Ex B',correct:1,ex:true},
+      {id:'SPA 1',correct:2},{id:'SPA 2',correct:4},{id:'SPA 3',correct:1},
+      {id:'SPA 4',correct:2},{id:'SPA 5',correct:5},{id:'SPA 6',correct:3},
+      {id:'SPA 7',correct:3},{id:'SPA 8',correct:4},{id:'SPA 9',correct:1},
+      {id:'SPA 10',correct:2},{id:'SPA 11',correct:2},{id:'SPA 12',correct:1},
+      {id:'SPA 13',correct:4},{id:'SPA 14',correct:3},{id:'SPA 15',correct:4},
+      {id:'SPA 16',correct:5},{id:'SPA 17',correct:2},{id:'SPA 18',correct:4}
+    ]},
+  { id:'CON', num:4, name:'Form Constancy', nOpt:5,
+    prompt:'<strong>"Onde no fundo você vê este formato?"</strong>',
+    items:[
+      {id:'CON Ex A',correct:2,ex:true},{id:'CON Ex B',correct:3,ex:true},
+      {id:'CON 1',correct:3},{id:'CON 2',correct:5},{id:'CON 3',correct:2},
+      {id:'CON 4',correct:1},{id:'CON 5',correct:4},{id:'CON 6',correct:4},
+      {id:'CON 7',correct:5},{id:'CON 8',correct:3},{id:'CON 9',correct:5},
+      {id:'CON 10',correct:4},{id:'CON 11',correct:3},{id:'CON 12',correct:5},
+      {id:'CON 13',correct:3},{id:'CON 14',correct:2},{id:'CON 15',correct:3},
+      {id:'CON 16',correct:2},{id:'CON 17',correct:2},{id:'CON 18',correct:2}
+    ]},
+  { id:'SEQ', num:5, name:'Sequential Memory', nOpt:4,
+    prompt:'Mostre por 5 segundos. <strong>"Qual mostra os formatos na mesma ordem?"</strong>',
+    items:[
+      {id:'SEQ Ex A',correct:4,ex:true},{id:'SEQ Ex B',correct:2,ex:true},
+      {id:'SEQ 1',correct:1},{id:'SEQ 2',correct:4},{id:'SEQ 3',correct:3},
+      {id:'SEQ 4',correct:1},{id:'SEQ 5',correct:4},{id:'SEQ 6',correct:4},
+      {id:'SEQ 7',correct:3},{id:'SEQ 8',correct:1},{id:'SEQ 9',correct:4},
+      {id:'SEQ 10',correct:2},{id:'SEQ 11',correct:2},{id:'SEQ 12',correct:3},
+      {id:'SEQ 13',correct:1},{id:'SEQ 14',correct:3},{id:'SEQ 15',correct:2},
+      {id:'SEQ 16',correct:3},{id:'SEQ 17',correct:3},{id:'SEQ 18',correct:4}
+    ]},
+  { id:'FGR', num:6, name:'Visual Figure-Ground', nOpt:4,
+    prompt:'<strong>"Em qual figura abaixo você encontra este formato escondido?"</strong>',
+    items:[
+      {id:'FGR Ex A',correct:1,ex:true},{id:'FGR Ex B',correct:4,ex:true},
+      {id:'FGR 1',correct:2},{id:'FGR 2',correct:1},{id:'FGR 3',correct:3},
+      {id:'FGR 4',correct:2},{id:'FGR 5',correct:4},{id:'FGR 6',correct:1},
+      {id:'FGR 7',correct:4},{id:'FGR 8',correct:1},{id:'FGR 9',correct:4},
+      {id:'FGR 10',correct:1},{id:'FGR 11',correct:2},{id:'FGR 12',correct:1},
+      {id:'FGR 13',correct:1},{id:'FGR 14',correct:2},{id:'FGR 15',correct:4},
+      {id:'FGR 16',correct:3},{id:'FGR 17',correct:1},{id:'FGR 18',correct:2}
+    ]},
+  { id:'CLO', num:7, name:'Visual Closure', nOpt:4,
+    prompt:'<strong>"Se completados e não movidos, qual pareceria exatamente com este?"</strong>',
+    items:[
+      {id:'CLO Ex A',correct:1,ex:true},{id:'CLO Ex B',correct:3,ex:true},
+      {id:'CLO 1',correct:4},{id:'CLO 2',correct:2},{id:'CLO 3',correct:2},
+      {id:'CLO 4',correct:3},{id:'CLO 5',correct:1},{id:'CLO 6',correct:4},
+      {id:'CLO 7',correct:2},{id:'CLO 8',correct:2},{id:'CLO 9',correct:3},
+      {id:'CLO 10',correct:4},{id:'CLO 11',correct:2},{id:'CLO 12',correct:4},
+      {id:'CLO 13',correct:3},{id:'CLO 14',correct:1},{id:'CLO 15',correct:4},
+      {id:'CLO 16',correct:3},{id:'CLO 17',correct:1},{id:'CLO 18',correct:2}
+    ]}
+];
+
+var state = {};
+SUBTESTS.forEach(function(s){ state[s.id] = {}; });
+
+function uid(subId, itemId) { return subId + '_' + itemId.replace(/ /g,'_'); }
+
+function buildAll() {
+  SUBTESTS.forEach(function(sub, i) {
+    document.getElementById('panel-sub' + (i+1)).innerHTML = buildSub(sub);
+  });
+}
+
+function buildSub(sub) {
+  var exItems = sub.items.filter(function(i){ return i.ex; });
+  var mainItems = sub.items.filter(function(i){ return !i.ex; });
+
+  function rowHTML(item) {
+    var k = uid(sub.id, item.id);
+    var btns = '';
+    for (var n = 1; n <= sub.nOpt; n++) {
+      btns += '<button class="resp-btn" id="rb-' + k + '-' + n + '" ' +
+        'ontouchend="tap(\'' + sub.id + '\',\'' + item.id + '\',' + n + ',' + item.correct + ',event)" ' +
+        'onclick="tap(\'' + sub.id + '\',\'' + item.id + '\',' + n + ',' + item.correct + ',event)">' + n + '</button>';
+    }
+    var exClass = item.ex ? ' example-row' : '';
+    var labelClass = item.ex ? ' ex-label' : '';
+    return '<div class="item-row' + exClass + '" id="row-' + k + '">' +
+      '<span class="item-label' + labelClass + '">' + item.id + '</span>' +
+      '<div class="resp-group">' + btns + '</div>' +
+      '<div class="score-col" id="sc-' + k + '"><span class="sc-blank">·</span></div>' +
+      '</div>';
+  }
+
+  var exHTML = exItems.map(rowHTML).join('');
+  var mainHTML = mainItems.map(rowHTML).join('');
+
+  return '<div class="card">' +
+    '<div class="sub-header"><span class="sub-name">' + sub.num + '. ' + sub.name + '</span><span class="sub-code">' + sub.id + '</span></div>' +
+    '<div class="sub-prompt">' + sub.prompt + '</div>' +
+    '<div class="items-list">' +
+      (exHTML ? '<div style="background:#f5f0fb;border-bottom:2px solid var(--border)">' + exHTML + '</div>' : '') +
+      mainHTML +
+    '</div>' +
+    '<div class="sub-footer">' +
+      '<div class="ceiling-warn" id="cw-' + sub.id + '"><div class="ceiling-dot"></div> Teto atingido</div>' +
+      '<div class="total-box"><span class="total-label">ESCORE BRUTO</span><div class="total-value" id="tv-' + sub.id + '">0</div></div>' +
+    '</div></div>';
+}
+
+var lastTap = {};
+function tap(subId, itemId, val, correct, ev) {
+  if (ev) { ev.preventDefault(); ev.stopPropagation(); }
+  var k = subId + '_' + itemId;
+  var now = Date.now();
+  if (lastTap[k] && now - lastTap[k] < 300) return;
+  lastTap[k] = now;
+
+  if (state[subId][itemId] === val) {
+    delete state[subId][itemId];
+    updateButtons(subId, itemId, null, correct);
+    updateScoreDisplay(subId, itemId, null);
+  } else {
+    state[subId][itemId] = val;
+    updateButtons(subId, itemId, val, correct);
+    updateScoreDisplay(subId, itemId, val === correct ? 1 : 0);
+  }
+  updateTotal(subId);
+  updateProgress();
+}
+
+function updateButtons(subId, itemId, val, correct) {
+  var k = uid(subId, itemId);
+  var sub = SUBTESTS.filter(function(s){ return s.id === subId; })[0];
+  for (var n = 1; n <= sub.nOpt; n++) {
+    var btn = document.getElementById('rb-' + k + '-' + n);
+    if (!btn) continue;
+    btn.classList.remove('sel-correct','sel-wrong');
+    if (val !== null && n === val) {
+      btn.classList.add(val === correct ? 'sel-correct' : 'sel-wrong');
+    }
+  }
+}
+
+function updateScoreDisplay(subId, itemId, score) {
+  var el = document.getElementById('sc-' + uid(subId, itemId));
+  if (!el) return;
+  if (score === null) {
+    el.innerHTML = '<span class="sc-blank">·</span>';
+  } else {
+    el.innerHTML = '<span class="score-badge sc-' + score + '">' + score + '</span>';
+  }
+}
+
+function updateTotal(subId) {
+  var sub = SUBTESTS.filter(function(s){ return s.id === subId; })[0];
+  var main = sub.items.filter(function(i){ return !i.ex; });
+  var total = 0;
+  var scores = main.map(function(item) {
+    var sel = state[subId][item.id];
+    if (sel === undefined) return null;
+    return sel === item.correct ? 1 : 0;
+  });
+  scores.forEach(function(s){ if (s === 1) total++; });
+
+  var ceiling = false;
+  if (scores.length >= 7) {
+    for (var i = 0; i <= scores.length - 7; i++) {
+      var win = scores.slice(i, i+7).filter(function(s){ return s !== null; });
+      if (win.length === 7 && win.filter(function(s){ return s === 0; }).length >= 5) {
+        ceiling = true; break;
+      }
+    }
+  }
+
+  var tv = document.getElementById('tv-' + subId);
+  if (tv) tv.textContent = total;
+  var cw = document.getElementById('cw-' + subId);
+  if (cw) { if (ceiling) cw.classList.add('show'); else cw.classList.remove('show'); }
+}
+
+function updateProgress() {
+  var total = 0, done = 0;
+  SUBTESTS.forEach(function(sub) {
+    var main = sub.items.filter(function(i){ return !i.ex; });
+    total += main.length;
+    main.forEach(function(item){ if (state[sub.id][item.id] !== undefined) done++; });
+  });
+  var p = document.getElementById('prog');
+  if (p) p.style.width = Math.round(done/total*100) + '%';
+}
+
+function updateSummary() {
+  var tbody = document.getElementById('sum-body');
+  if (!tbody) return;
+  var savedScaled = {};
+  SUBTESTS.forEach(function(sub) {
+    var el = document.getElementById('sci-' + sub.id);
+    if (el) savedScaled[sub.id] = el.value;
+  });
+
+  var rows = '';
+  var sumScaled = 0;
+  SUBTESTS.forEach(function(sub) {
+    var main = sub.items.filter(function(i){ return !i.ex; });
+    var raw = 0;
+    main.forEach(function(item) {
+      var sel = state[sub.id][item.id];
+      if (sel !== undefined && sel === item.correct) raw++;
+    });
+    var prev = savedScaled[sub.id] || '';
+    if (prev) sumScaled += parseInt(prev) || 0;
+    rows += '<tr class="sub-row">' +
+      '<td>' + sub.num + '. ' + sub.name + '</td>' +
+      '<td><input class="tbl-input tbl-raw" type="number" value="' + raw + '" readonly></td>' +
+      '<td><input class="tbl-input" id="sci-' + sub.id + '" type="number" inputmode="numeric" min="1" max="19" value="' + prev + '" placeholder="—" oninput="updateSummary()"></td>' +
+      '<td><input class="tbl-input" type="text" placeholder="—" style="width:80px"></td>' +
+      '<td><input class="tbl-input" type="text" placeholder="—"></td>' +
+      '<td><input class="tbl-input" type="text" placeholder="—"></td>' +
+      '</tr>';
+  });
+
+  var ssMap = {19:145,18:140,17:135,16:130,15:125,14:120,13:115,12:110,11:105,10:100,9:95,8:90,7:85,6:80,5:75,4:70,3:65,2:60,1:55};
+  var pctMap = {145:'>99',140:'>99',135:'99',130:'98',125:'95',120:'91',115:'84',110:'75',105:'63',100:'50',95:'37',90:'25',85:'16',80:'9',75:'5',70:'2',65:'1',60:'<1',55:'<1'};
+  var ss = sumScaled ? (ssMap[sumScaled] || '—') : '—';
+  var pct = ss !== '—' ? (pctMap[ss] || '—') : '—';
+
+  rows += '<tr class="sum-row"><td>Soma Ponderados</td><td>—</td><td style="font-size:16px;color:var(--purple)">' + (sumScaled||'—') + '</td><td colspan="3"></td></tr>';
+  rows += '<tr class="overall-row"><td>Escore Padrão Total</td><td>—</td><td>' + ss + '</td><td>—</td><td>' + pct + '</td><td>—</td></tr>';
+  tbody.innerHTML = rows;
+}
+
+function calcAge() {
+  var ty=+document.getElementById('ty').value, tm=+document.getElementById('tm').value, td=+document.getElementById('td').value;
+  var by=+document.getElementById('by').value, bm=+document.getElementById('bm').value, bd=+document.getElementById('bd').value;
+  var el = document.getElementById('age-display');
+  if (!ty||!tm||!td||!by||!bm||!bd) { el.textContent='Preencha as datas acima'; return; }
+  var y=ty-by, m=tm-bm, d=td-bd;
+  if(d<0){m--;d+=30;} if(m<0){y--;m+=12;}
+  el.textContent = y + ' anos, ' + m + ' meses e ' + d + ' dias';
+}
+['ty','tm','td','by','bm','bd'].forEach(function(id) {
+  document.getElementById(id).addEventListener('input', calcAge);
+});
+
+function showTab(name, el) {
+  document.querySelectorAll('.panel').forEach(function(p){ p.classList.remove('active'); });
+  document.querySelectorAll('.tab-btn').forEach(function(b){ b.classList.remove('active'); });
+  var panel = document.getElementById('panel-' + name);
+  if (panel) panel.classList.add('active');
+  if (el) el.classList.add('active');
+  if (el) {
+    var tabs = document.getElementById('tabs');
+    tabs.scrollLeft = el.offsetLeft - (tabs.offsetWidth/2) + (el.offsetWidth/2);
+  }
+  if (name === 'summary') updateSummary();
+  document.querySelector('.scroll-area').scrollTop = 0;
+}
+
+function resetAll() {
+  SUBTESTS.forEach(function(s){ state[s.id] = {}; });
+  buildAll();
+  updateProgress();
+  ['ty','tm','td','by','bm','bd','f-name','f-school','f-exam','f-reason','f-grade'].forEach(function(id) {
+    var el = document.getElementById(id); if (el) el.value = '';
+  });
+  document.getElementById('f-gender').value = '';
+  document.getElementById('age-display').textContent = 'Preencha as datas acima';
+  var c = document.getElementById('comments'); if (c) c.value = '';
+}
+
+buildAll();
+</script>
+</body>
+</html>
